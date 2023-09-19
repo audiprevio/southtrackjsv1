@@ -292,7 +292,7 @@ var map = L.map('map', {
     var penguins = L.layerGroup();
 
     function fetchPenguinData() {
-        return fetch('http://penguintrackerapi.fly.dev/admin/penguins') 
+        return fetch('https://penguintrackerapi.fly.dev/admin/penguins') 
             .then(response => {
                 if (!response.ok) {
                     throw new Error("Network response was not OK");
@@ -350,7 +350,7 @@ var map = L.map('map', {
 
     const getPerformanceData = async () => {
         try {
-            const response = await fetch('http://penguintrackerapi.fly.dev/admin/getPerformanceData');
+            const response = await fetch('https://penguintrackerapi.fly.dev/admin/getPerformanceData');
             const data = await response.json();
 
             const totalPenguinTrackedElement = document.getElementById('total-Penguin-Tracked');
