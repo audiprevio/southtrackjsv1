@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/src/content/favicon.svg">
+    <title>southTrack | JS-based latitude and longitude tracker API & Interface</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+    <style>
+        h4 {
+            margin-bottom: 0;
+            color: #015498;
+        }
+
+        p {
+            margin-top: 0;
+        }
+        body {
+            font-family: 'Helvetica Neue';
+        }
+
+        b {
+            color: #015498
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        .ping-animation {
+            animation: ping 1s infinite;
+        }
+
+        @keyframes ping {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        100% {
+            transform: scale(2);
+            opacity: 0;
+        }
+}
+
+        a {
+            text-decoration: none;
+            color: #015498;
+            font-weight: medium;
+        }
+
+        a:hover {
+            color: #107;
+        }
+
+        #navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: white;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+            color: #333;
+        }
+
+        h2 {
+            color: #015498;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            margin-top: 0.5rem;
+        }   
+        #map { 
+            height: 100vh; 
+            padding: 0;
+        }
+
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+            background: white;
+            color: #333;
+            box-shadow: 0 0px 0px #fafafa;
+            padding: 1px;
+            text-align: left;
+            border-color: aqua;
+            border: 2px;
+            border-radius: 4px;
+        }
+        .leaflet-popup-close-button {
+            display: none;
+        }
+        #info-card {
+            position: absolute;
+            bottom: 2.5%;
+            right: 1vw;
+            width: 15rem;
+            padding: 1rem;
+            background-color: #fff;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 10px;
+            z-index: 650;
+        }
+        #penguin-list {
+            max-height: 22rem;
+            overflow-y: auto;
+        }
+
+
+        #info-card h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        hr.vertical-divider {
+            min-height: 100%;
+            max-height: 100vh;
+            margin-top: -1;
+            margin-bottom: -1;
+            width: 1px;
+            margin-left: 0.75rem;
+            border: none;
+            background-color: #e5e5e5;
+            margin-right: 0.75rem;
+        }
+
+        #map {
+            flex: 1;
+        }
+        
+        #nav-card h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .penguin-popup .leaflet-popup-content-wrapper, .penguin-popup .leaflet-popup-tip {
+            background: white;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+            padding: 1px;
+            text-align: left;
+            border-color: aqua;
+            border: 2px;
+            border-radius: 4px;
+            padding: 1rem;
+            width: 15rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+
+        #nav-card {
+            position: absolute;
+            bottom: 2.5%;
+            left: 1vw;
+            width: 32rem;
+            padding: 0.5rem 1rem;
+            background-color: #fff;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding: 0.5rem 1rem;
+            z-index: 650;
+            display: flex;
+            justify-content: flex-start;
+            flex-direction: row;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #nav-card h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        #nav-card p {
+            font-size: 0.75rem;
+            margin: 0;
+            color: #015498;
+        }
+        
+
+        #nav-card {
+            flex: 0 0 200px;
+            margin: 10px;
+        }
+        .custom-leaflet-control-layers-toggle {
+            background-image: url(images/layers.png);
+            width: 36px;
+            height: 36px;
+            background-position: 50% 50%;
+            background-repeat: no-repeat;
+            display: block;
+        }
+
+        #penguins-card {
+            position: absolute;
+            top: 2.5%;
+            right: 1vw;
+            width: 15rem;
+            padding: 1rem;
+            background-color: #fff;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 10px;
+            z-index: 650;
+        }
+        #penguins-card h2 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        #penguins-card p {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        hr.divider {
+            height: 1px;
+            background-color: #e5e5e5;
+            border: none;
+            margin-left: -1rem;
+            margin-right: -1rem;
+        }
+
+        @keyframes blink {
+            0% {opacity: 1;}
+            50% {opacity: 0;}
+            100% {opacity: 1;}
+        }
+
+        .blinking-circle {
+            animation: blink 2.5s infinite;
+        }
+
+        .logo {
+            width: 8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="custom-leaflet-control-layers-toggle" id="nav-card">
+       <img class="logo" src="./src/content/southTrack.svg">
+       <hr class="vertical-divider">
+       <p class="caption">JS-based latitude and longitude tracker API & Interface →</p>
+    </div>
+    <div id="map"></div>
+    <div id="info-card">
+        <h2>Progress Report</h2>
+        <hr class="divider">
+        <p><span id="total-Penguin-Tracked"></span></p>
+        <p><span id="last-Updated"></span></p>
+    </div>
+    <div id="penguins-card">
+        <h2>Tracked Penguins</h2>
+        <hr class="divider">
+        <div id="penguin-list"></div>
+    </div>        
+</body>
+<script>
+var map = L.map('map', {
+    pane: 'cardPane'
+    }).setView([-77.84068826234282, 166.68787351282026], 10);
+
+    map.createPane('cardPane');
+    map.getPane('cardPane').style.zIndex = 650;
+    L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'iles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012',
+        maxZoom: 8,
+        minZoom: 4,
+    }).addTo(map);
+
+    var penguinIcon = L.icon({
+        iconUrl: '/src/content/pengsvg.svg',
+        iconSize: [48, 48],
+        iconAnchor: [24, 48],
+        popupAnchor: [0, -30]
+    });
+
+    var baseIcon = L.icon({
+        iconUrl: '/src/content/baseb.svg',
+        iconSize: [48, 48],
+        iconAnchor: [24, 48],
+        popupAnchor: [0, -46]
+    });
+
+    var penguins = L.layerGroup();
+
+    function fetchPenguinData() {
+        return fetch('http://penguintrackerapi.fly.dev/admin/penguins') 
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not OK");
+                }
+                return response.json();
+            })
+            .catch(error => console.error("There has been a problem with your fetch operation:", error));
+    }
+
+    function addPenguinMarker(penguin) {
+        L.marker(penguin.lastPosition, {icon: penguinIcon})
+            .bindPopup(`
+                <h2>Name: ${penguin.penguinName}</h2>
+                <p>Last Position: ${penguin.lastPosition[0]}, ${penguin.lastPosition[1]}</p>
+                <p>Last Updated: ${penguin.lastUpdate}</p>
+                <p>Age at Tagging: ${penguin.ageAtTagging}</p>
+                <p>Tagged by: ${penguin.taggedBy}</p>
+            `)
+            .addTo(map);
+        L.circleMarker(penguin.lastPosition, {
+            radius: 10,
+            fillColor: "#666",
+            stroke: "#666",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8,
+            className: 'blinking-circle'
+        }).addTo(map);
+}
+    
+    window.onload = function() {
+    fetchPenguinData()
+        .then(penguins => {
+            penguins.forEach(addPenguinMarker);
+            updatePenguinInfoCard(penguins);
+        });
+};
+
+
+    // //-66.282302, 110.521742
+    L.marker([-77.848848, 166.674230], {icon:baseIcon}).addTo(map).bindPopup("McMurdo Station Antarctica").openPopup();
+    L.marker([-74.698477, 164.110744], {icon:baseIcon}).addTo(map).bindPopup("Zuccheli Station Antarctica").openPopup();
+    L.marker([-66.665064, 140.008238], {icon:baseIcon}).addTo(map).bindPopup("Dumbont D'Urville Station").openPopup();
+
+    
+    var legend = L.control({position: 'bottomleft'});
+
+    legend.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'info legend');
+        div.innerHTML += '<i style="background: url(/src/content/pengsvg.svg) no-repeat center; width: 1rem; height: 1rem;"></i><span>Penguins</span><br>';
+        return div;
+    };
+
+    legend.addTo(map);
+
+    const getPerformanceData = async () => {
+        try {
+            const response = await fetch('http://penguintrackerapi.fly.dev/admin/getPerformanceData');
+            const data = await response.json();
+
+            const totalPenguinTrackedElement = document.getElementById('total-Penguin-Tracked');
+            const lastUpdatedElement = document.getElementById('last-Updated');
+
+            totalPenguinTrackedElement.textContent = `Total Penguins Tracked: ${data.totalPenguinTracked}`;
+            lastUpdatedElement.textContent = `Last Updated: ${data.lastUpdated}`;
+        } catch (error) {
+            console.error("Error fetching performance data:", error);
+        }
+    };
+
+    // Call the function to fetch and update performance data when needed
+    getPerformanceData();
+
+    function updatePenguinInfoCard(penguins) {
+    const penguinListElement = document.getElementById('penguin-list');
+    // Clear out old penguin info
+    penguinListElement.innerHTML = '';
+    penguins.forEach(penguin => {
+        const penguinInfoElement = document.createElement('div');
+        const penguinNameElement = document.createElement('h4');
+        const penguinLocationElement = document.createElement('p');
+        penguinNameElement.textContent = `${penguin.penguinName}`;
+        penguinLocationElement.textContent = `at (${penguin.lastPosition[0]}, ${penguin.lastPosition[1]})`;
+        penguinInfoElement.appendChild(penguinNameElement);
+        penguinInfoElement.appendChild(penguinLocationElement);
+        penguinListElement.appendChild(penguinInfoElement);
+    });
+}
+
+
+</script>
+</html>
